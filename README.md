@@ -5,9 +5,9 @@ This applicatipn was built using Node.js for the backend, vanilla JavaScript for
 It will allow you to see a table of users 📅
 
 It will also provide you  the functionality to:
-+ Add a user
+- Add a user
 - Delete a user
-= Update a user
+- Update a user
 
 ## Set up
 
