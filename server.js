@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFile, writeFile } from 'fs/promises';
 
 const app = express();
 const port = 3000;
@@ -9,56 +9,77 @@ const filePath = './users.json';
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Helper functions to read and write JSON data
-const getUsers = () => {
-  const data = readFileSync(filePath);
-  return JSON.parse(data);
+
+// Pulling JSON data
+
+const getUsers = async () => {
+  try {
+    const data = await readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading users:', error);
+    return [];
+  }
 };
 
-const saveUsers = (users) => {
-  writeFileSync(filePath, JSON.stringify(users, null, 2));
+const saveUsers = async (users) => {
+  try {
+    await writeFile(filePath, JSON.stringify(users, null, 2));
+  } catch (error) {
+    console.error('Error saving users:', error);
+  }
 };
 
-// API to get all users
-app.get('/api/users', (req, res) => {
-  const users = getUsers();
+// Adding in CRUD functionality
+
+// Get request
+app.get('/api/users', async (req, res) => {
+  const users = await getUsers();
   res.json(users);
 });
 
-// API to create a new user
-app.post('/api/users', (req, res) => {
-  const users = getUsers();
+// Post request
+app.post('/api/users', async (req, res) => {
+  const users = await getUsers();
   const newUser = {
     id: users.length ? users[users.length - 1].id + 1 : 1,
     name: req.body.name,
     email: req.body.email,
+    phone: req.body.phone 
   };
   users.push(newUser);
-  saveUsers(users);
+  await saveUsers(users);
   res.json(newUser);
 });
 
-// API to update a user
-app.put('/api/users/:id', (req, res) => {
-  const users = getUsers();
+// Put request (instead of patch)
+app.put('/api/users/:id', async (req, res) => {
+  const users = await getUsers();
   const id = parseInt(req.params.id);
   const userIndex = users.findIndex((u) => u.id === id);
+
   if (userIndex !== -1) {
-    users[userIndex] = { id, name: req.body.name, email: req.body.email };
-    saveUsers(users);
+    users[userIndex] = {
+      id,
+      name: req.body.name,
+      email: req.body.email,
+      phone: req.body.phone,
+    };
+    await saveUsers(users);
     res.json(users[userIndex]);
   } else {
     res.status(404).send('User not found');
   }
 });
 
-// API to delete a user
-app.delete('/api/users/:id', (req, res) => {
-  let users = getUsers();
+// Delete request
+app.delete('/api/users/:id', async (req, res) => {
+  let users = await getUsers();
   const id = parseInt(req.params.id);
   users = users.filter((user) => user.id !== id);
-  saveUsers(users);
-  res.sendStatus(204);  // No content to return
+
+  await saveUsers(users);
+  res.sendStatus(200);
 });
 
 app.listen(port, () => {

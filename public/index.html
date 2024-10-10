@@ -8,6 +8,7 @@
 </head>
 <body>
   <div class="container"></div>
+
     <h1>User Management</h1>
     
     <form id="user-form">
@@ -19,21 +20,27 @@
       <label for="email">Email:</label>
       <input type="email" id="email" required>
 
+      <label for="phone">Phone:</label>
+      <input type="tel" id="phone" required>
+
       <button type="submit">Save User Details</button>
     </form>
 
-    <h2>Users List</h2>
+    <h2>Users</h2>
+
     <table>
       <thead>
         <tr>
           <th>ID</th>
           <th>Name</th>
           <th>Email</th>
+          <th>Phone</th>
           <th>Actions</th>
         </tr>
       </thead>
+      
       <tbody id="user-list">
-        <!-- Users will be dynamically inserted here -->
+
       </tbody>
     </table>
   </div>

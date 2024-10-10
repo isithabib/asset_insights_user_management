@@ -4,36 +4,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const userIdField = document.getElementById('user-id');
   const nameField = document.getElementById('name');
   const emailField = document.getElementById('email');
+  const phoneField = document.getElementById('phone');
 
-  // Load all users on page load
-  fetch('/api/users')
-    .then((response) => response.json())
-    .then((data) => {
-      data.forEach(addUserToTable);
-    });
+  // Display current users when page loads
+  const showUsers = async () => {
+    const response = await fetch('/api/users');
+    const data = await response.json();
+    data.forEach(addUserToTable);
+  };
 
-  // Add or update user on form submit
-  userForm.addEventListener('submit', (e) => {
+  showUsers();
+
+  // Allow you to add or update user on form submission (based on whether the id exists already)
+  userForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = userIdField.value;
     const name = nameField.value;
     const email = emailField.value;
+    const phone = phoneField.value;
 
     if (id) {
-      // Update user
-      fetch(`/api/users/${id}`, {
+      await fetch(`/api/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
-      }).then(() => location.reload());
+        body: JSON.stringify({ name, email, phone }),
+      });
     } else {
-      // Create new user
-      fetch('/api/users', {
+      await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
-      }).then(() => location.reload());
+        body: JSON.stringify({ name, email, phone }),
+      });
     }
+
+    location.reload();
   });
 
   // Add user to table
@@ -43,8 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <td>${user.id}</td>
       <td>${user.name}</td>
       <td>${user.email}</td>
+      <td>${user.phone}</td>
       <td>
-        <button onclick="editUser(${user.id}, '${user.name}', '${user.email}')">Edit</button>
+        <button onclick="editUser(${user.id}, '${user.name}', '${user.email}','${user.phone}')">Edit</button>
         <button onclick="deleteUser(${user.id})">Delete</button>
       </td>
     `;
@@ -52,18 +57,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Edit user
-  window.editUser = (id, name, email) => {
+  window.editUser = (id, name, email, phone) => {
     userIdField.value = id;
     nameField.value = name;
     emailField.value = email;
+    phoneField.value = phone;
   };
 
-  // Delete user
-  window.deleteUser = (id) => {
+  // Delete user with confirmation pop up
+  window.deleteUser = async (id) => {
     if (confirm('Are you sure you want to delete this user?')) {
-      fetch(`/api/users/${id}`, {
+      await fetch(`/api/users/${id}`, {
         method: 'DELETE',
-      }).then(() => location.reload());
+      });
+      location.reload();
     }
   };
 });
